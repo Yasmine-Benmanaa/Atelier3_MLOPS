@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+import os
 import sys
 
 from prefect import flow, task
@@ -141,6 +142,24 @@ def run_tests():
     print("Tests unitaires réussis.")
 
 
+@task
+def get_project():
+    """Récupère le projet depuis GitHub."""
+    print("\n=== Récupération du projet depuis GitHub ===")
+
+    repo_url = "https://github.com/Yasmine-Benmanaa/Atelier3_MLOPS.git"
+    project_dir = "../ml_project_remote"
+
+    if not os.path.exists(project_dir):
+        print("Le projet n'existe pas localement. Clonage...")
+        subprocess.run(["git", "clone", repo_url, project_dir], check=True)
+    else:
+        print("Le projet existe déjà. Mise à jour...")
+        subprocess.run(["git", "-C", project_dir, "pull"], check=True)
+
+    print("Projet récupéré avec succès.")
+
+
 # ============================================================
 # FLOWS
 # ============================================================
@@ -149,6 +168,8 @@ def run_tests():
 @flow(name="ml-pipeline-all")
 def all_flow():
     """Exécute le pipeline complet."""
+    # . Récupération du projet depuis GitHub
+    get_project()
 
     # 1. Vérification du code
     code_flow()
